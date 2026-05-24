@@ -3,6 +3,7 @@ import {supabase} from './supabase.js'
 import Auth from './Auth.jsx'
 import Groups from './Groups.jsx'
 import Prode from './Prode.jsx'
+import {runScoreUpdate} from './scoreUpdater.js'
 
 export default function App(){
   const [user,setUser]=useState(null)
@@ -26,6 +27,11 @@ export default function App(){
     if(!user) return
     supabase.from('profiles').select('*').eq('id',user.id).single()
       .then(({data})=>{if(data)setProfile(data)})
+    // Actualizar puntos automáticamente al abrir la app
+    runScoreUpdate()
+    // Y cada 30 minutos mientras esté abierta
+    const iv = setInterval(runScoreUpdate, 30 * 60 * 1000)
+    return () => clearInterval(iv)
   },[user])
 
   if(loading) return(
